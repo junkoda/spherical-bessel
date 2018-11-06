@@ -16,22 +16,27 @@ for key, value in cfg_vars.items():
         cfg_vars[key] = value.replace("-Wstrict-prototypes", "")
 
 # directories for include -I(idir)
-#idirs = os.environ["IDIRS"]
-#if idirs:
-#    idirs = idirs.split()
-#else:
-#    idirs = []
+
+idirs = []
+if 'IDIRS' in os.environ:
+    idirs = os.environ('IDIRS')
+    if idirs:
+        idirs = idirs.split()
 
 #idirs = ['../lib', np.get_include()] #+ idirs
 
-# directories for libraries -L(dir)
-#ldirs = os.environ["LDIRS"]
-#if ldirs:
-#    ldirs = ldirs.split()
-#else:
-#    ldirs = []
 
-#libs = [] #os.environ['LIBS'].split()
+# directories for libraries -L(dir)
+
+ldirs = []
+if 'LDIRS' in os.environ:
+    ldirs = os.environ["LDIRS"]
+    if ldirs:
+        ldirs = ldirs.split()
+
+
+
+libs = ['gsl'] #os.environ['LIBS'].split()
 
 setup(name='spherical_bessel',
       version='0.0.1',
@@ -43,8 +48,8 @@ setup(name='spherical_bessel',
                     ['py_package.cpp',
                      'py_spherical_bessel.cpp',
                     ],
-                    #include_dirs = idirs,
-                    #libraries = libs,
+                    include_dirs = idirs,
+                    libraries = libs,
                     undef_macros = ['NDEBUG'],
                     #extra_compile_args = [os.environ['OPT']],
                     #library_dirs = ldirs,
