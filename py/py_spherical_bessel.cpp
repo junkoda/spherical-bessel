@@ -67,7 +67,7 @@ static void decode_array(const char name[],
 //
 PyObject* py_spherical_bessel_integrate(PyObject* self, PyObject* args)
 {
-  // _spherical_bessel_integrate(cmd, k, r, f, n, sin, cos, n, l)
+  // _spherical_bessel_integrate(cmd, k, r, f, sin, cos, ibegin, n, l)
   // Integrate: \int_0^\infty d(kr) j_l(kr) (kr)^n f(x)
   //
   // Args:
@@ -113,6 +113,7 @@ int ibegin;
       decode_array("cosx", py_cos, &cosx, r.shape[0], PyBUF_ANY_CONTIGUOUS);
   }
   catch(TypeError) {
+    //PyErr_SetString(PyExc_ValueError, msg);
     return NULL;
   }
   
@@ -127,7 +128,7 @@ int ibegin;
 			  r.shape[0],
 			  l, n, kr_max, &integ);
   }
-  if(strcmp(cmd, "sin_integ") == 0) {
+  else if(strcmp(cmd, "sin_integ") == 0) {
     assert(sinx.buf); assert(cosx.buf); assert(l == 0);
 
     integ = integrate_sin(k,
@@ -136,7 +137,7 @@ int ibegin;
 			  (double*) sinx.buf, (double*) cosx.buf,
 			  ibegin, r.shape[0], n);
   }
-  if(strcmp(cmd, "cos_integ") == 0) {
+  else if(strcmp(cmd, "cos_integ") == 0) {
     assert(sinx.buf); assert(cosx.buf); assert(l == 0);
 
     integ = integrate_cos(k,
@@ -144,6 +145,12 @@ int ibegin;
 			  (double*) f.buf, f.strides[0],
 			  (double*) sinx.buf, (double*) cosx.buf,
 			  ibegin, r.shape[0], n);
+  }
+  else {
+    char msg[64];
+    sprintf(msg, "Unknown command: %.60s", cmd);
+    PyErr_SetString(PyExc_ValueError, msg);
+    return NULL;
   }
   
   PyBuffer_Release(&r);
@@ -168,15 +175,13 @@ int integrate_trapezoidal(double k,
 			  const size_t iend,
 			  const int l, const int n,
 			  const double kr_max,
-			  double* const result)
+			  double* const integ)
 {
   assert(l >= 0);
   // int_0^kr_max (kr)^n j_\ell(kr) f(r)
   double kr1= k*(*r);
   double y1;
 
-  double integ= 0;
-  
   if(l == 0) { // j0
     y1= gsl_sf_bessel_j0(kr1)*pow(kr1, n)*(*f);
       
@@ -186,7 +191,7 @@ int integrate_trapezoidal(double k,
       double kr2= k*(*r);
       double y2= gsl_sf_bessel_j0(kr2)*pow(kr2, n)*(*f);
 
-      integ += 0.5*(y1 + y2)*(kr2 - kr1);
+      *integ += 0.5*(y1 + y2)*(kr2 - kr1);
 
       if(kr_max > 0.0 && kr2 > kr_max) return i;
       
@@ -203,7 +208,7 @@ int integrate_trapezoidal(double k,
       double kr2= k*(*r);
       double y2= gsl_sf_bessel_j1(kr2)*pow(kr2, n)*(*f);
 
-      integ += 0.5*(y1 + y2)*(kr2 - kr1);
+      *integ += 0.5*(y1 + y2)*(kr2 - kr1);
 
       if(kr_max > 0.0 && kr2 > kr_max) return i;
 
@@ -220,7 +225,7 @@ int integrate_trapezoidal(double k,
       double kr2= k*(*r);
       double y2= gsl_sf_bessel_j2(kr2)*pow(kr2, n)*(*f);
 
-      integ += 0.5*(y1 + y2)*(kr2 - kr1);
+      *integ += 0.5*(y1 + y2)*(kr2 - kr1);
 
       if(kr_max > 0.0 && kr2 > kr_max) return i;
       
@@ -237,7 +242,7 @@ int integrate_trapezoidal(double k,
       double kr2= k*(*r);
       double y2= gsl_sf_bessel_jl(l, kr2)*pow(kr2, n)*(*f);
 
-      integ += 0.5*(y1 + y2)*(kr2 - kr1);
+      *integ += 0.5*(y1 + y2)*(kr2 - kr1);
 
       if(kr_max > 0.0 && kr2 > kr_max) return i;
       
@@ -246,9 +251,7 @@ int integrate_trapezoidal(double k,
     }
   }
 
-  *result= integ;
-  
-  return 0;
+  return iend;
 }
 
 double integrate_sin(double k,
@@ -304,9 +307,9 @@ double integrate_sin(double k,
       double a1= (y2 - y1)/(kr2 - kr1);
 
       // y = 
-      integ += a1*(  sin_integ2(kr2, sinkr[i], coskr[i])
+      integ += a1*(  sin_integ2(kr2, sinkr[i],   coskr[i])
 		   - sin_integ2(kr1, sinkr[i-1], coskr[i-1]))
-	     + a0*(  sin_integ1(kr2, sinkr[i], coskr[i])
+	     + a0*(  sin_integ1(kr2, sinkr[i],   coskr[i])
 		   - sin_integ1(kr1, sinkr[i-1], coskr[i-1]));
 
       kr1= kr2;
@@ -325,9 +328,9 @@ double integrate_sin(double k,
       double a1= (y2 - y1)/(kr2 - kr1);
 
       // y = 
-      integ += a1*(  sin_integ3(kr2, sinkr[i], coskr[i])
+      integ += a1*(  sin_integ3(kr2, sinkr[i],   coskr[i])
 		   - sin_integ3(kr1, sinkr[i-1], coskr[i-1]))
-	     + a0*(  sin_integ2(kr2, sinkr[i], coskr[i])
+	     + a0*(  sin_integ2(kr2, sinkr[i],   coskr[i])
 		   - sin_integ2(kr1, sinkr[i-1], coskr[i-1]));
 
       kr1= kr2;
@@ -392,9 +395,9 @@ double integrate_cos(double k,
       double a1= (y2 - y1)/(kr2 - kr1);
 
       // y = 
-      integ += a1*(  cos_integ2(kr2, sinkr[i], coskr[i])
+      integ += a1*(  cos_integ2(kr2, sinkr[i],   coskr[i])
 		   - cos_integ2(kr1, sinkr[i-1], coskr[i-1]))
-	     + a0*(  cos_integ1(kr2, sinkr[i], coskr[i])
+	     + a0*(  cos_integ1(kr2, sinkr[i],   coskr[i])
 		   - cos_integ1(kr1, sinkr[i-1], coskr[i-1]));
 
       kr1= kr2;
@@ -413,9 +416,9 @@ double integrate_cos(double k,
       double a1= (y2 - y1)/(kr2 - kr1);
 
       // y = 
-      integ += a1*(  cos_integ3(kr2, sinkr[i], coskr[i])
+      integ += a1*(  cos_integ3(kr2, sinkr[i],   coskr[i])
 		   - cos_integ3(kr1, sinkr[i-1], coskr[i-1]))
-	     + a0*(  cos_integ2(kr2, sinkr[i], coskr[i])
+	     + a0*(  cos_integ2(kr2, sinkr[i],   coskr[i])
 		   - cos_integ2(kr1, sinkr[i-1], coskr[i-1]));
 
       kr1= kr2;
