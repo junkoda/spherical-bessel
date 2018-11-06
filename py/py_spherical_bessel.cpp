@@ -1,4 +1,4 @@
-#include <iostream> // debug
+//#include <iostream> // debug
 #include <cmath>
 #include <gsl/gsl_sf_bessel.h>
 #include "sincos_integ.h"
@@ -168,6 +168,16 @@ int ibegin;
 //
 // Integration
 //
+static inline bool condition(const double kr1, const double kr2,
+			     const double kr_max) {
+  if(kr2 > kr_max)
+  //if(kr2 - kr1 > 0.01)
+  //if(kr2 > 10.0)
+    return true;
+  
+  return false;
+}
+
 
 int integrate_trapezoidal(double k,
 			  double* r, const size_t r_stride,
@@ -177,6 +187,7 @@ int integrate_trapezoidal(double k,
 			  const double kr_max,
 			  double* const integ)
 {
+  // NOTE: kr_max is negelected now
   assert(l >= 0);
   // int_0^kr_max (kr)^n j_\ell(kr) f(r)
   double kr1= k*(*r);
@@ -193,7 +204,8 @@ int integrate_trapezoidal(double k,
 
       *integ += 0.5*(y1 + y2)*(kr2 - kr1);
 
-      if(kr_max > 0.0 && kr2 > kr_max) return i;
+      //if(kr_max > 0.0 && kr2 > kr_max) return i;
+      if(condition(kr1, kr2, kr_max)) return i;
       
       kr1= kr2;
       y1= y2;
@@ -210,7 +222,8 @@ int integrate_trapezoidal(double k,
 
       *integ += 0.5*(y1 + y2)*(kr2 - kr1);
 
-      if(kr_max > 0.0 && kr2 > kr_max) return i;
+      //if(kr_max > 0.0 && kr2 > kr_max) return i;
+      if(condition(kr1, kr2, kr_max)) return i;
 
       kr1= kr2;
       y1= y2;      
@@ -227,7 +240,8 @@ int integrate_trapezoidal(double k,
 
       *integ += 0.5*(y1 + y2)*(kr2 - kr1);
 
-      if(kr_max > 0.0 && kr2 > kr_max) return i;
+      //if(kr_max > 0.0 && kr2 > kr_max) return i;
+      if(condition(kr1, kr2, kr_max)) return i;
       
       kr1= kr2;
       y1= y2;      
@@ -244,7 +258,8 @@ int integrate_trapezoidal(double k,
 
       *integ += 0.5*(y1 + y2)*(kr2 - kr1);
 
-      if(kr_max > 0.0 && kr2 > kr_max) return i;
+      //if(kr_max > 0.0 && kr2 > kr_max) return i;
+      if(condition(kr1, kr2, kr_max)) return i;
       
       kr1= kr2;
       y1= y2;      
@@ -263,7 +278,7 @@ double integrate_sin(double k,
 {
   assert(0 <= n && n < 3);
   //
-  // \int r^n dr j_l(kr) f(r)
+  // \int (kr)^n dkr sin(kr) f(r)
   //
   //
   r = (double*) ((char*) r + ibegin*r_stride);
@@ -282,15 +297,15 @@ double integrate_sin(double k,
       double y2= *f;
 
       // interpolate y = a0 + a1*(kr)
+
       double a0= (y1*kr2 - y2*kr1)/(kr2 - kr1);
       double a1= (y2 - y1)/(kr2 - kr1);
 
-      // y = 
       integ += a1*(  sin_integ1(kr2, sinkr[i],   coskr[i])
 		   - sin_integ1(kr1, sinkr[i-1], coskr[i-1]))
 	     + a0*(  sin_integ0(kr2, sinkr[i],   coskr[i])
 		   - sin_integ0(kr1, sinkr[i-1], coskr[i-1]));
-
+      
       kr1= kr2;
       y1= y2;
     }
