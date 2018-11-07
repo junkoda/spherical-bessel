@@ -63,7 +63,7 @@ def integrate(x, f, l, n=0, *, sinx=None, cosx=None, kind='auto'):
             _, integ = c._spherical_bessel_integrate('sin_integ', 1.0, x, f,
                                                      sinx, cosx, 0, n - 2,
                                                      0, 0.0)
-            _, res = c._spherical_bessel_integrate('sin_integ', 1.0, x, f,
+            _, res = c._spherical_bessel_integrate('cos_integ', 1.0, x, f,
                                                    sinx, cosx, 0, n - 1,
                                                    0, 0.0)
             integ -= res
@@ -83,6 +83,9 @@ def integrate(x, f, l, n=0, *, sinx=None, cosx=None, kind='auto'):
                                                    sinx, cosx, i, 0,
                                                    0, 0.0)
             integ -= res
+        else:
+            raise ValueError('l=1 n=%d not implemented')
+
     elif l == 2:
         # j2(x) = (3.0/x^3) sin x - 3.0/x^2 cos x - 1/x sin x
         i, integ = c._spherical_bessel_integrate('trapezoidal', 1.0, x, f,

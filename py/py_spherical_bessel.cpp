@@ -168,11 +168,15 @@ int ibegin;
 //
 // Integration
 //
+
+// Condition switching from trapezoidal to piece-wise liear * trigonometric
 static inline bool condition(const double kr1, const double kr2,
-			     const double kr_max) {
-  if(kr2 > kr_max)
+			     const double kr_max)
+{
   //if(kr2 - kr1 > 0.01)
   //if(kr2 > 10.0)
+  
+  if(kr2 > kr_max)
     return true;
   
   return false;
@@ -204,7 +208,6 @@ int integrate_trapezoidal(double k,
 
       *integ += 0.5*(y1 + y2)*(kr2 - kr1);
 
-      //if(kr_max > 0.0 && kr2 > kr_max) return i;
       if(condition(kr1, kr2, kr_max)) return i;
       
       kr1= kr2;
@@ -222,7 +225,6 @@ int integrate_trapezoidal(double k,
 
       *integ += 0.5*(y1 + y2)*(kr2 - kr1);
 
-      //if(kr_max > 0.0 && kr2 > kr_max) return i;
       if(condition(kr1, kr2, kr_max)) return i;
 
       kr1= kr2;
@@ -240,7 +242,6 @@ int integrate_trapezoidal(double k,
 
       *integ += 0.5*(y1 + y2)*(kr2 - kr1);
 
-      //if(kr_max > 0.0 && kr2 > kr_max) return i;
       if(condition(kr1, kr2, kr_max)) return i;
       
       kr1= kr2;
@@ -258,7 +259,6 @@ int integrate_trapezoidal(double k,
 
       *integ += 0.5*(y1 + y2)*(kr2 - kr1);
 
-      //if(kr_max > 0.0 && kr2 > kr_max) return i;
       if(condition(kr1, kr2, kr_max)) return i;
       
       kr1= kr2;

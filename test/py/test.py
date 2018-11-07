@@ -101,6 +101,78 @@ class TestSphericalBessel(unittest.TestCase):
         
         self.assertAlmostEqual(s.integrate(x, f, 4), 0.602723, places=4)
 
+    def test_j0_n1(self):
+        """
+        Test int x^1 j0(x) dx
+        """
+
+        x = 10**np.linspace(-4, math.log10(40.0), 2001)
+        f = np.exp(-0.5*x)
+
+        test = s.integrate(x, f, l=0, n=1)
+
+        self.assertAlmostEqual(test, 0.8, places=4)
+
+    def test_j0_n2(self):
+        """
+        Test int x^2 j0(x) dx
+        """
+
+        x = 10**np.linspace(-4, math.log10(40.0), 2001)
+        f = np.exp(-0.5*x)
+
+        test = s.integrate(x, f, l=0, n=2)
+        self.assertAlmostEqual(test, 0.64, places=4)
+
+    def test_j0_n3(self):
+        """
+        Test int x^3 j0(x) dx
+        """
+
+        x = 10**np.linspace(-4, math.log10(40.0), 2001)
+        f = np.exp(-0.5*x)
+
+        test = s.integrate(x, f, l=0, n=3)
+        self.assertAlmostEqual(test, -0.256, places=3)
+
+    def test_j1_n1(self):
+        """
+        Test int x^1 j1(x) dx
+        """
+
+        x = 10**np.linspace(-4, math.log10(40.0), 2001)
+        f = np.exp(-0.5*x)
+
+        test = s.integrate(x, f, l=1, n=1)
+
+        self.assertAlmostEqual(test, 0.707149, places=4)
+
+    def test_j1_n2(self):
+        """
+        Test int x^2 j1(x) dx
+        !!! Failing !!!
+        """
+
+        x = 10**np.linspace(-4, math.log10(40.0), 2001)
+        f = np.exp(-0.5*x)
+
+        test = s.integrate(x, f, l=1, n=2)
+
+        self.assertAlmostEqual(test, 1.28, places=4)
+
+    def test_j2_n1(self):
+        """
+        Test int x^1 j2(x) dx
+        !!! Failing !!!
+        """
+
+        x = 10**np.linspace(-4, math.log10(40.0), 2001)
+        f = np.exp(-0.5*x)
+
+        test = s.integrate(x, f, l=2, n=1)
+        print('test_j2_n1', test)
+
+        self.assertAlmostEqual(test, 0.539277, places=4)
 
 if __name__ == "__main__":
     unittest.main()
