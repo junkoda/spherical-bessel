@@ -1,8 +1,8 @@
 import numpy as np
 import math
 import unittest
-
 import spherical_bessel as s
+
 
 class TestSphericalBessel(unittest.TestCase):
     """
@@ -58,7 +58,7 @@ class TestSphericalBessel(unittest.TestCase):
 
         x = 10**np.linspace(-4, 5, 1001)
         f = np.ones_like(x)
-        
+
         self.assertAlmostEqual(s.integrate(x, f, 0), math.pi/2, places=4)
 
     def test_j1(self):
@@ -68,7 +68,7 @@ class TestSphericalBessel(unittest.TestCase):
 
         x = 10**np.linspace(-4, 5, 2001)
         f = np.ones_like(x)
-        
+
         self.assertAlmostEqual(s.integrate(x, f, 1), 1.0, places=4)
 
     def test_j2(self):
@@ -78,7 +78,7 @@ class TestSphericalBessel(unittest.TestCase):
 
         x = 10**np.linspace(-4, 5, 3001)
         f = np.ones_like(x)
-        
+
         self.assertAlmostEqual(s.integrate(x, f, 2), 0.785398, places=4)
 
     def test_j3(self):
@@ -86,9 +86,9 @@ class TestSphericalBessel(unittest.TestCase):
         Test int_1.0e-4^10 j3(x) dx = 0.573031
         """
 
-        x = 10**np.linspace(-4, 5, 4001) 
+        x = 10**np.linspace(-4, 5, 4001)
         f = np.ones_like(x)
-        
+
         self.assertAlmostEqual(s.integrate(x, f, 3), 2.0/3.0, places=4)
 
     def test_j4(self):
@@ -98,7 +98,7 @@ class TestSphericalBessel(unittest.TestCase):
 
         x = 10**np.linspace(-4, 1.0, 2001)
         f = np.ones_like(x)
-        
+
         self.assertAlmostEqual(s.integrate(x, f, 4), 0.602723, places=4)
 
     def test_j0_n1(self):
@@ -170,9 +170,9 @@ class TestSphericalBessel(unittest.TestCase):
         f = np.exp(-0.5*x)
 
         test = s.integrate(x, f, l=2, n=1)
-        print('test_j2_n1', test)
 
         self.assertAlmostEqual(test, 0.539277, places=4)
+
 
 if __name__ == "__main__":
     unittest.main()
