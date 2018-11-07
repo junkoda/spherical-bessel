@@ -1,23 +1,30 @@
 import spherical_bessel._spherical_bessel as c
 import numpy as np
 
+
 def sin_integ(x, f, n=0, *, sinx=None, cosx=None):
-    if sinx is None: sinx = np.sin(x)
-    if cosx is None: cosx = np.cos(x)
+    if sinx is None:
+        sinx = np.sin(x)
+    if cosx is None:
+        cosx = np.cos(x)
 
     _, integ = c._spherical_bessel_integrate('sin_integ', 1.0, x, f,
                                              sinx, cosx, 0, n,
                                              0, 0.0)
     return integ
 
+
 def cos_integ(x, f, n=0, *, sinx=None, cosx=None):
-    if sinx is None: sinx = np.sin(x)
-    if cosx is None: cosx = np.cos(x)
+    if sinx is None:
+        sinx = np.sin(x)
+    if cosx is None:
+        cosx = np.cos(x)
 
     _, integ = c._spherical_bessel_integrate('cos_integ', 1.0, x, f,
                                              sinx, cosx, 0, n,
                                              0, 0.0)
     return integ
+
 
 def integrate(x, f, l, n=0, *, sinx=None, cosx=None, kind='auto'):
     """
@@ -28,7 +35,7 @@ def integrate(x, f, l, n=0, *, sinx=None, cosx=None, kind='auto'):
     assert(f.dtype == 'float64')
 
     if not isinstance(n, int):
-        raise('n must be an integer: {}' % n)
+        raise TypeError('n must be an integer: {}' % n)
 
     if kind == 'trapezoidal':
         _, integ = c._spherical_bessel_integrate('trapezoidal', 1.0, x, f,
@@ -36,10 +43,10 @@ def integrate(x, f, l, n=0, *, sinx=None, cosx=None, kind='auto'):
         return integ
     elif kind != 'auto':
         raise ValueError('Unknown kind of integral %s' % kind)
-    
+
     i = 0
     integ = 0.0
-    
+
     if sinx is None:
         sinx = np.sin(x)
     if cosx is None:
@@ -91,7 +98,7 @@ def integrate(x, f, l, n=0, *, sinx=None, cosx=None, kind='auto'):
         i, integ = c._spherical_bessel_integrate('trapezoidal', 1.0, x, f,
                                                  sinx, cosx, 0, n,
                                                  l, 1.0)
-        
+
         ff = (3.0*x**(n - 3) - 1.0*x**(n - 1))*f
         _, res = c._spherical_bessel_integrate('sin_integ', 1.0, x, ff,
                                                sinx, cosx, i, 0,
@@ -112,7 +119,7 @@ def integrate(x, f, l, n=0, *, sinx=None, cosx=None, kind='auto'):
 
         x = x[i:]
         f = f[i:]
-        
+
         ff = (15.0*x**(n - 4) - 6.0*x**(n - 2))*f
         _, res = c._spherical_bessel_integrate('sin_integ', 1.0, x, ff,
                                                sinx[i:], cosx[i:], 0, 0,
@@ -134,7 +141,7 @@ def integrate(x, f, l, n=0, *, sinx=None, cosx=None, kind='auto'):
 
         x = x[i:]
         f = f[i:]
-        
+
         ff = (105.0*x**(n - 5) - 45.0*x**(n - 3) + 1.0*x**(n - 1))*f
         _, res = c._spherical_bessel_integrate('sin_integ', 1.0, x, ff,
                                                sinx[i:], cosx[i:], 0, 0,
@@ -152,6 +159,7 @@ def integrate(x, f, l, n=0, *, sinx=None, cosx=None, kind='auto'):
 
     return integ
 
+
 def integrate_dx(k, r, f, l, n=0):
     """
     Integrate 4pi (-i)^l int_0^infity r^n dr j_l(kr) f(r)
@@ -163,5 +171,6 @@ def integrate_dx(k, r, f, l, n=0):
       l (int):   l in spherical Bessel function j_l(kr)
       n (int):   factor in r^n
     """
-    
+
+    raise RuntimeError('not implemented')
     return 0.0
